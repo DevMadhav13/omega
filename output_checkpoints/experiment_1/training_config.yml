@@ -1,0 +1,83 @@
+model:
+  _component_: models.lora_mmllama3_8b
+  lora_attn_modules:
+  - q_proj
+  - v_proj
+  apply_lora_to_mlp: false
+  apply_lora_to_output: false
+  lora_rank: 8
+  lora_alpha: 16
+  perception_tokens: 2
+  use_clip: false
+tokenizer:
+  _component_: models.a2a_tokenizer
+  path: models/tokenizer.model
+checkpointer:
+  _component_: torchtune.utils.FullModelMetaCheckpointer
+  checkpoint_dir: checkpoints/Meta-Llama-3-8B-Instruct/original
+  checkpoint_files:
+  - consolidated.00.pth
+  adapter_checkpoint: null
+  recipe_checkpoint: null
+  output_dir: output_checkpoints/experiment_1
+  model_type: LLAMA3
+resume_from_checkpoint: false
+interim_checkpoint_steps: 5000
+interim_gen_steps: null
+max_new_tokens: 100
+temperature: 0.8
+top_k: 300
+dataset:
+  _component_: ds.EvenBatcher
+  buffer_size: 36
+  dataset:
+    _component_: ds.RoundRobinDataset
+    datasets:
+    - _component_: ds.OmegaVideoCaptionDataset
+      length: 500000
+    - _component_: ds.LlavaInstructDataset
+      dataset_path: ds/coco_llava_instruct/output.parquet
+      train_on_input: false
+    - _component_: ds.LlavaInstructDataset
+      dataset_path: ds/vision_flan/output.parquet
+      train_on_input: false
+    - _component_: ds.CaptionInstructDataset
+      dataset_path: ds/sam_llava/output.parquet
+      train_on_input: false
+seed: null
+shuffle: true
+batch_size: 6
+optimizer:
+  _component_: torch.optim.AdamW
+  weight_decay: 0.01
+  lr: 0.03
+lr_scheduler:
+  _component_: torchtune.modules.get_cosine_schedule_with_warmup
+  num_warmup_steps: 100
+loss:
+  _component_: torch.nn.CrossEntropyLoss
+epochs: 1
+max_steps_per_epoch: null
+gradient_accumulation_steps: 64
+compile: false
+output_dir: /tmp/lora_finetune_output
+metric_logger:
+  _component_: torchtune.utils.metric_logging.DiskLogger
+  log_dir: ${output_dir}
+log_every_n_steps: null
+device: cuda
+dtype: bf16
+enable_activation_checkpointing: false
+profiler:
+  _component_: torchtune.utils.profiler
+  enabled: false
+inference:
+  prompt_template: 'Video:
+
+    {video}
+
+    Caption the previous video.'
+  max_new_tokens: 300
+  temperature: 0.8
+  top_k: 300
+  quantizer: null

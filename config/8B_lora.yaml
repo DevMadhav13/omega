@@ -47,7 +47,7 @@ interim_checkpoint_steps: 5000
 
 interim_gen_steps: null
 max_new_tokens: 100
-temperature: 0.6  # 0.8 and 0.6 are popular values to try
+temperature: 0.8  # 0.8 and 0.6 are popular values to try
 top_k: 300
 
 # Dataset and Sampler
@@ -74,13 +74,13 @@ dataset:
 
 seed: null
 shuffle: True
-batch_size: 4
+batch_size: 6
 
 # Optimizer and Scheduler
 optimizer:
   _component_: torch.optim.AdamW
   weight_decay: 0.01
-  lr: 3e-4
+  lr: 3e-2
 lr_scheduler:
   _component_: torchtune.modules.get_cosine_schedule_with_warmup
   num_warmup_steps: 100
@@ -114,6 +114,6 @@ profiler:
 inference:
   prompt_template: "Video:\n{video}\nCaption the previous video."
   max_new_tokens: 300
-  temperature: 0.6 # 0.8 and 0.6 are popular values to try
+  temperature: 0.8 # 0.8 and 0.6 are popular values to try
   top_k: 300
   quantizer: null

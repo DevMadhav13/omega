@@ -18,7 +18,6 @@ checkpoints/
 *.pt
 *.parquet
 output/
-output_checkpoints/
 model_cache
 data_cache
 
